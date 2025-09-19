@@ -12,25 +12,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flowise Chatbot Widget</title>
+    <title>Flowise Chatbot Widget - Complete Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+    </style>
 </head>
 
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <h1>🤖 Flowise Embed - Complete Test Page</h1>
+        
+        <div class="test-section">
+            <h2>📋 Test Status</h2>
+            <div id="status" class="status info">
+                Initializing test...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 Configuration Test</h2>
+            <p>Testing if the chatbot can be initialized...</p>
+            <button onclick="testChatbotInit()">Test Chatbot Initialization</button>
+            <div id="config-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>💬 Chatbot Widget</h2>
+            <p>The chatbot widget should appear below. If configured correctly, you'll see a chat button.</p>
+            <div id="chatbot-container"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 API Endpoints Test</h2>
+            <p>Testing if the API endpoints are accessible...</p>
+            <button onclick="testAPIEndpoints()">Test API Endpoints</button>
+            <div id="api-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔗 Direct Links</h2>
+            <p>Test these URLs directly:</p>
+            <ul>
+                <li><a href="/web.js" target="_blank">JavaScript Bundle: /web.js</a></li>
+                <li><a href="/api/v1/public-chatbotConfig/agent1" target="_blank">Config API: /api/v1/public-chatbotConfig/agent1</a></li>
+            </ul>
+        </div>
+    </div>
+
     <script type="module">
         import Chatbot from '/web.js'
         
-        // Example initialization:
-        // If your .env contains:
-        // agent1=xyz789-uvw456,https://example.com
-        // support=abc123-def456,https://example.com
-        // salesbot=ghi123-jkl456,https://example.com
-        //
-        // Then use the environment variable name as chatflowid:
-        Chatbot.init({
-            chatflowid: 'agent1',    // or 'support', 'salesbot', etc.
-            apiHost: window.location.origin
-        })
+        let chatbot = null;
+        
+        // Update status
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        // Test chatbot initialization
+        window.testChatbotInit = function() {
+            const configStatus = document.getElementById('config-status');
+            try {
+                updateStatus('Testing chatbot initialization...', 'info');
+                
+                // Try to initialize the chatbot
+                chatbot = Chatbot.init({
+                    chatflowid: 'agent1',
+                    apiHost: window.location.origin,
+                    theme: {
+                        button: {
+                            backgroundColor: '#007bff',
+                            right: 20,
+                            bottom: 20,
+                            size: 'medium'
+                        },
+                        chatWindow: {
+                            title: 'Test Chatbot',
+                            welcomeMessage: 'Hello! This is a test chatbot. How can I help you?'
+                        }
+                    }
+                });
+                
+                configStatus.innerHTML = '<div class="status success">✅ Chatbot initialized successfully!</div>';
+                updateStatus('Chatbot initialization test passed!', 'success');
+                
+            } catch (error) {
+                configStatus.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+                updateStatus('Chatbot initialization failed. Check your environment variables.', 'error');
+            }
+        };
+        
+        // Test API endpoints
+        window.testAPIEndpoints = async function() {
+            const apiStatus = document.getElementById('api-status');
+            apiStatus.innerHTML = '<div class="status info">Testing API endpoints...</div>';
+            
+            try {
+                // Test web.js endpoint
+                const webResponse = await fetch('/web.js');
+                const webStatus = webResponse.ok ? '✅' : '❌';
+                
+                // Test config endpoint
+                const configResponse = await fetch('/api/v1/public-chatbotConfig/agent1');
+                const configStatus = configResponse.ok ? '✅' : '❌';
+                
+                apiStatus.innerHTML = `
+                    <div class="status ${webResponse.ok ? 'success' : 'error'}">
+                        ${webStatus} /web.js - ${webResponse.status}
+                    </div>
+                    <div class="status ${configResponse.ok ? 'success' : 'error'}">
+                        ${configStatus} /api/v1/public-chatbotConfig/agent1 - ${configResponse.status}
+                    </div>
+                `;
+                
+                if (webResponse.ok && configResponse.ok) {
+                    updateStatus('All API endpoints are working!', 'success');
+                } else {
+                    updateStatus('Some API endpoints are not working. Check your configuration.', 'error');
+                }
+                
+            } catch (error) {
+                apiStatus.innerHTML = `<div class="status error">❌ Error testing APIs: ${error.message}</div>`;
+                updateStatus('API test failed. Check your server configuration.', 'error');
+            }
+        };
+        
+        // Auto-run tests on page load
+        window.addEventListener('load', function() {
+            updateStatus('Page loaded. Ready for testing!', 'info');
+            // Auto-test API endpoints
+            setTimeout(testAPIEndpoints, 1000);
+        });
     </script>
 </body>
 
